@@ -1,10 +1,16 @@
 extern crate forge_grpc;
-// extern crate forge_sdk;
 extern crate forge_wallet;
 
 use forge_grpc::{connection, transaction, Result};
 
-fn get_forge_info() -> Result<()> {
+/// Example:
+/// - 1.add connection with forge chain
+/// - 2.create local wallet
+/// - 3.declare wallet on forge chain
+/// - 4.checkin to some tokens
+/// - 5.transfer some tokens to other
+/// - 6. get account state
+fn transfer() -> Result<()> {
     let chain_address = "127.0.0.1:28210";
     let chain_name = "chain_1";
 
@@ -56,10 +62,23 @@ fn get_forge_info() -> Result<()> {
     println!("transfer, resp {:?}", resp);
     assert!(!resp.get_hash().is_empty());
 
+    // -8.get alice account state
+    // sleep 5s to wait transfer transaction stable.
+    std::thread::sleep(std::time::Duration::from_secs(5));
+    let resp = forge_grpc::get_account_state(
+        &vec![alice.address, bob.address],
+        Some(chain_name.to_string()),
+    )?;
+    println!(
+        "alice balance: {:#?}, bob balance: {:#?}",
+        resp[0].get_state().get_balance().to_f64(),
+        resp[1].get_state().get_balance().to_f64()
+    );
+
     Ok(())
 }
 
 fn main() -> Result<()> {
-    get_forge_info()?;
+    transfer()?;
     Ok(())
 }
