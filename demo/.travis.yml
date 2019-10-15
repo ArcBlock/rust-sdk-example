@@ -1,0 +1,24 @@
+sudo: false
+language: rust
+cache: cargo
+
+os:
+ - osx
+#  - linux
+
+rust:
+  - nightly
+  - stable
+
+matrix:
+  allow_failures:
+    - rust: nightly
+  fast_finish: true
+
+evn:
+  - RUST_BACKTRACE=1
+  - TRAVIS=true
+  - CI=true
+
+script:
+  - cargo test --all
