@@ -12,6 +12,6 @@ description = "Forge Rust SDK demo"
 keywords = ["forge", "demo"]
 
 [dependencies]
-forge_wallet = "^0.1.1"
-forge_grpc = "^0.1.1"
-# forge_sdk = "^0.1.1"
+forge_wallet = "^0.1.3"
+forge_grpc = "^0.1.3"
+# forge_sdk = "^0.1.3"

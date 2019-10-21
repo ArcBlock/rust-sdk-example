@@ -53,26 +53,33 @@ fn transfer() -> Result<()> {
     assert!(!resp.get_hash().is_empty());
 
     // -7.alice transfer 1 token to bob
+    let decimal = connection::get_connection(Some(chain_name.to_string()))
+        .unwrap()
+        .get_decimal() as usize;
     let transfer_itx = transaction::build_itx::Transfer {
         to: Some(bob.address.to_owned()),
-        value: Some(1.0),
+        value: Some(forge_grpc::BigUint::from_string("1", decimal)?),
         ..Default::default()
     };
     let resp = forge_grpc::transfer(&request, &transfer_itx)?;
     println!("transfer, resp {:?}", resp);
     assert!(!resp.get_hash().is_empty());
 
-    // -8.get alice account state
-    // sleep 5s to wait transfer transaction stable.
-    std::thread::sleep(std::time::Duration::from_secs(5));
+    // -8.if the tx stable, then get balance.
+    let hash = resp.get_hash().to_owned();
+    let tx_resp = forge_grpc::check_tx(&vec![hash.to_owned()], None).unwrap();
+    assert!(tx_resp.get(&hash).unwrap());
+
+    // -9.get balance
     let resp = forge_grpc::get_account_state(
         &vec![alice.address, bob.address],
         Some(chain_name.to_string()),
-    )?;
+    )
+    .unwrap();
     println!(
         "alice balance: {:#?}, bob balance: {:#?}",
-        resp[0].get_state().get_balance().to_f64(),
-        resp[1].get_state().get_balance().to_f64()
+        resp[0].get_state().get_balance().to_string(decimal),
+        resp[1].get_state().get_balance().to_string(decimal)
     );
 
     Ok(())
